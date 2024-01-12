@@ -15,7 +15,6 @@ function Set-LocalAdminAccount
 		[String]$Description = ""
 
 	)
-
 	[String]$BuiltInAdministratorsGroupSID = "S-1-5-32-544"
 	[ADSI]$LocalMachineADSIInstance = $null
 	try
@@ -26,10 +25,7 @@ function Set-LocalAdminAccount
 	{
 		return $Error[0]
 	}
-
-	#We're going to loop over this code twice. The first time will happen in case the account doesn't already exist. The second time will be to ensure that account creation was successful.
 	$TargetUserAccountInstance = $null
-
 	[bool]$UserAccountExists = $false
 	[int]$UserAccountCreationCounter = 0
 
@@ -47,7 +43,6 @@ function Set-LocalAdminAccount
 
 		if ($null -ne $UserAccountObject)
 		{
-			#If account does exist, we skip creating it
 			$UserAccountExists = $true
 		}
 		else
@@ -67,17 +62,12 @@ function Set-LocalAdminAccount
 	}
 	if ($UserAccountExists -ne $true)
 	{
-		return 1 #We return a 1 if the account still doesn't exist after we've tried to create it
+		return 1
 	}
-
-
 	$TargetUserAccountInstance = $LocalMachineADSIInstance.GetObject("User",$Username)
-	#Now we're going to attempt to set a password and then check the password to ensure it was set successfully
-
 	Add-Type -AssemblyName System.DirectoryServices.AccountManagement 
 	$AccountManagementContextType = [DirectoryServices.AccountManagement.ContextType]::Machine
 	$AccountManagementPrincipalContext = [DirectoryServices.AccountManagement.PrincipalContext]::new($AccountManagementContextType)
-
 	[Boolean]$UserAccountPasswordSet = $false
 	[int]$UserAccountPasswordSetCounter = 0
 	while (($UserAccountPasswordSetCounter -le 1) -and ($UserAccountPasswordSet -eq $false))
@@ -105,13 +95,11 @@ function Set-LocalAdminAccount
 		}
 		$UserAccountPasswordSetCounter = $UserAccountPasswordSetCounter + 1
 	}
-
 	if ($UserAccountPasswordSet -ne $true)
 	{
 		#If the password set wasn't successful, return 1 for error
 		return 1
 	}
-
 	if ($DisplayName -ne "")
 	{
 		[bool]$UserAccountDisplayNameSet = $false
@@ -138,7 +126,6 @@ function Set-LocalAdminAccount
 			return 1
 		}
 	}
-
 	if ($Description -ne "")
 	{
 		[bool]$UserAccountDescriptionSet = $false
@@ -176,7 +163,6 @@ function Set-LocalAdminAccount
 	}
 	[Bool]$UserIsMemberofAdministratorsGroup = $false
 	[int]$AdministratorsGroupMembershipAdditionCounter = 0
-	
 	while (($AdministratorsGroupMembershipAdditionCounter -le 1) -and ($UserIsMemberofAdministratorsGroup -eq $false))
 	{
 		$LocalAdministratorGroupMembership = $null
